@@ -90,6 +90,20 @@ module.exports = function (RED) {
         res.json(JSON.stringify(ret));
     });
 
+    RED.httpAdmin.get('/ikea/ikea-sound-remotes', RED.auth.needsPermission('ikea-homesmart.read'), function(req, res) {
+        const node = RED.nodes.getNode(req.query.nodeId);
+        if (!node) {
+            res.json({ error: true });
+            return;
+        }
+        let remotes = node.getSoundRemotes();
+        let ret = [];
+        for (let k in remotes) {
+            ret.push({ name: remotes[k].name, id: k });
+        }
+        res.json(JSON.stringify(ret));
+    });
+
     RED.httpAdmin.get('/ikea/ikea-groups', RED.auth.needsPermission('ikea-homesmart.read'), function (req, res) {
 
         const node = RED.nodes.getNode(req.query.nodeId);
@@ -144,6 +158,7 @@ module.exports = function (RED) {
         var _plugs = {};
         var _sensors = {};
         var _remotes = {};
+        var _soundRemotes = {};
         var _groups = {};
         let _scenes = {};
         var _listeners = {};
@@ -165,6 +180,8 @@ module.exports = function (RED) {
             } else if (accessory.type === ikea.AccessoryTypes.remote || accessory.type === ikea.AccessoryTypes.slaveRemote) {
                 _remotes[accessory.instanceId] = accessory;
                 //RED.log.debug(`Remote ${accessory.instanceId} found`);
+            } else if (accessory.type === ikea.AccessoryTypes.soundRemote) {
+                _soundRemotes[accessory.instanceId] = accessory;
             }
 
             if (_listeners[accessory.instanceId]) {
@@ -362,6 +379,23 @@ module.exports = function (RED) {
             return _remotes;
         };
 
+        node.getSoundRemote = (instanceId) => __awaiter(this, void 0, void 0, function* () {
+            let maxRetries = 5;
+            let timeout = 2;
+            for (let i = 0; i < maxRetries; i++) {
+                if (_remotes[instanceId] == null) {
+                    yield new Promise(resolve => setTimeout(resolve, timeout * 1000));
+                } else {
+                    return _soundRemotes[instanceId];
+                }
+            }
+            throw new Error('Sound remote not available');
+        });
+
+        node.getSoundRemotes = () => {
+          return _soundRemotes;
+        }
+
         node.getGroup = (instanceId) => __awaiter(this, void 0, void 0, function* () {
             let maxRetries = 5;
             let timeout = 2;
@@ -487,6 +521,8 @@ module.exports = function (RED) {
                     payload = yield _config.getSensor(node.deviceId);
                 } else if (node.deviceType === 'ikea-remotes') {
                     payload = yield _config.getRemote(node.deviceId);
+                } else if (node.deviceType == 'ikea-sound-remotes') {
+                    payload = yield _config.getSoundRemote(node.deviceId);
                 } else if (node.deviceType === 'ikea-groups') {
                     payload = yield _config.getGroup(node.deviceId);
                 }

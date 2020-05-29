@@ -114,6 +114,9 @@
             case "ikea-remotes":
                 $('#node-input-deviceId-icon').attr('class', 'fa fa-power-off');
                 $('#deviceObserve').hide();
+            case "ikea-sound-remotes":
+                $('#node-input-deviceId-icon').attr('class', 'fa fa-volume-up');
+                $('#deviceObserve').show();
                 $('#sceneId').hide();
                 break;
             case "ikea-groups":
@@ -197,6 +200,7 @@
                     <option value="ikea-plugs">Plug</option>
                     <option value="ikea-sensors">Sensor</option>
                     <option value="ikea-remotes">Remote</option>
+                    <option value="ikea-sound-remotes">Sound Remote</option>
                     <option value="ikea-groups">Group</option>
                 </select>
             </div>
@@ -397,6 +401,7 @@
             <li>motionSensor (4) - A motion sensor</li>
             <li>signalRepeater (6) - A signal repeater</li>
             <li>blind (7) - A blind</li>
+            <li>soundRemote (8) - A Sound Remote</li>
         </ul>
         <li><code>"alive"</code>: boolean - Whether the gateway considers this device as alive.</li>
         <li><code>"lastSeen"</code>: number - The unix timestamp of the last communication with the gateway.</li>
